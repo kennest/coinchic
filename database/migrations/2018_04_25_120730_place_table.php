@@ -29,6 +29,12 @@ class PlaceTable extends Migration
                ->references('id')
                ->on('geolocations')
                ->onDelete('cascade');
+
+           $table->integer('district_id')->unsigned();
+           $table->foreign('district_id')
+               ->references('id')
+               ->on('districts')
+               ->onDelete('cascade');
        });
 
        Schema::create('places_events',function (Blueprint $table){

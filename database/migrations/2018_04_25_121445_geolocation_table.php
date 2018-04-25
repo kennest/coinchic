@@ -15,8 +15,8 @@ class GeolocationTable extends Migration
     {
         Schema::create('geolocations', function (Blueprint $table) {
             $table->increments('id');
-            $table->float('lat');
-            $table->float('long');
+            $table->point('lat');
+            $table->point('long');
             $table->integer('place_id')->unsigned();
             $table->foreign('place_id')
                 ->references('id')->on('places')
