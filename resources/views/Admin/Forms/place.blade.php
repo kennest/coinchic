@@ -16,21 +16,16 @@
         <fieldset>
             <legend>Addresse</legend>
             <div class="form-group">
-                <label>Artistes:</label>
-                <select name="commune" class="form-control">
-                    @foreach($communes as $c)
-                        @if($place->address->commune===$c))
-                        <option value="{{$c}}"  selected="true">{{$c}}</option>
+                <label>Commune:</label>
+                <select name="district" class="form-control">
+                    @foreach($districts as $d)
+                        @if($place->district===$d))
+                        <option value="{{$d}}"  selected="true">{{$d}}</option>
                             @else
-                            <option value="{{$c}}">{{$c}}</option>
+                            <option value="{{$d->id}}">{{$d->label}}</option>
                         @endif
                     @endforeach
                 </select>
-            </div>
-            <div class="form-group">
-                <label for="photo">Quartier:</label>
-                <input type="text" class="form-control" id="photo" placeholder="Quartier..." name="quartier"
-                       value="{{$place->address->quartier}}">
             </div>
             <div id="map"></div>
             <input hidden id="lat" name="lat" value="{{$place->address->lat}}">
@@ -43,8 +38,8 @@
             var oldmarkers = [];
 
             function initMap() {
-                var lat ={{$place->address->lat}};
-                var long ={{$place->address->long}};
+                var lat ={{$place->geolocation->lat}};
+                var long ={{$place->geolocation->long}};
                 var placecoord = {lat: lat, lng: long};
 
                 var map = new google.maps.Map(document.getElementById('map'), {
@@ -100,15 +95,11 @@
             <legend>Addresse</legend>
             <div class="form-group">
                 <label for="photo">Commune:</label>
-                <select name="commune" class="form-control">
-                    @foreach($communes as $c)
-                        <option value="{{$c}}">{{$c}}</option>
+                <select name="district" class="form-control">
+                    @foreach($districts as $d)
+                        <option value="{{$d->id}}">{{$d->label}}</option>
                     @endforeach
                 </select>
-            </div>
-            <div class="form-group">
-                <label for="photo">Quartier:</label>
-                <input type="text" class="form-control" id="photo" placeholder="Quartier..." name="quartier">
             </div>
             <div id="map"></div>
             <input hidden id="lat" name="lat" value=""/>

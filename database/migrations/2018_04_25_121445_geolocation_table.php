@@ -31,6 +31,6 @@ class GeolocationTable extends Migration
      */
     public function down()
     {
-        //
+        Schema::dropIfExists('geolocations');
     }
 }

@@ -10,7 +10,9 @@ namespace App\Http\Controllers;
 
 use App\Models\Address;
 use App\Models\Artist;
+use App\Models\District;
 use App\Models\Event;
+use App\Models\Geolocation;
 use App\Models\Place;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -24,7 +26,6 @@ class adminController extends Controller
     const SAMPLES_DIR = '/artists/samples';
     const PLACE_PIC_DIR = '/places/pictures';
     const EVENT_PIC_DIR = '/events/pictures';
-    const COMMUNE = array('Abobo', 'Adjamé', 'Atécoubé', 'Cocody', 'Koumassi', 'Marcory', 'Plateau', 'Port-Bouet', 'Treichville', 'Yopougon');
 
     /**
      * Create a new controller instance.
@@ -39,40 +40,29 @@ class adminController extends Controller
     public function index()
     {
         $places = Place::all();
-        $events=Event::all();
-        return view('Admin.index', compact( 'places','events'));
-    }
-
-    public function artistForm($id = null)
-    {
-        $artist = Artist::find($id);
-        return view('Admin.artistForm', compact('artist'));
+        $events = Event::all();
+        return view('Admin.index', compact('places', 'events'));
     }
 
     public function placeForm($id = null)
     {
-        $communes=$this::COMMUNE;
+        $districts = District::all();
         $place = Place::find($id);
-        return view('Admin.placeForm', compact('place','communes'));
+        if ($place) {
+            $place->load('geolocation', 'district');
+        }
+        return view('Admin.placeForm', compact('place', 'districts'));
     }
 
     public function eventForm($id = null)
     {
-        $types=Type::all();
-        $artists = Artist::all();
+        $types = Type::all();
         $event = Event::find($id);
         $places = Place::all();
         if ($id) {
-            $event->load('artists', 'place','type');
-            $event_artists = $event->artists()->get();
-
-            $list = array();
-            foreach ($event_artists as $a) {
-                array_push($list, $a->id);
-            }
-
+            $event->load('place', 'type');
         }
-        return view('Admin.eventForm', compact('event', 'places', 'artists', 'list','types'));
+        return view('Admin.eventForm', compact('event', 'places', 'types'));
     }
 
     //********************************************AJOUT***************************************************************//
@@ -110,33 +100,30 @@ class adminController extends Controller
         $this->validate($request, [
             'title' => 'required',
             'picture' => 'required|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
-            'commune' => 'required',
-            'quartier' => 'required',
             'lat' => 'required',
             'long' => 'required',
         ]);
         $place = new Place();
-        $address = new Address();
         $place->title = $request->input('title');
-
+        $geolcation = new Geolocation();
         //Picture upload
         $picture = $request->file('picture');
 
         $pic = Storage::disk('upload')->putFile($this::PLACE_PIC_DIR, $picture);
 
         $place->picture = $pic;
-
+        $geolcation->lat = $request->input('lat');
+        $geolcation->long = $request->input('long');
+        $place->geolocation()->associate($geolcation);
         $place->save();
 
         //data-binding
-        $address->commune = $request->input('commune');
-        $address->quartier = $request->input('quartier');
-        $address->lat = $request->input('lat');
-        $address->long = $request->input('long');
-
+        $district_id = $request->input('district');
+        $district = District::findOrFail($district_id);
         //associate with place
-        $address->place()->associate($place);
-        $address->save();
+        $district->place()->associate($place);
+        $district->save();
+
         return redirect()->route('admin.index');
     }
 
@@ -144,17 +131,14 @@ class adminController extends Controller
     public function addEvent(Request $request)
     {
         $this->validate($request, [
-            'artists' => 'required|array',
             'place_id' => 'required|integer'
         ]);
 
 
-        $artists = $request->input('artists');
-
         $place = Place::find($request->input('place_id'));
         $event = new Event();
 
-        $type=Type::find($request->input('type_id'));
+        $type = Type::find($request->input('type_id'));
         //data-binding
         $event->title = $request->input('title');
         $event->description = $request->input('description');
@@ -170,9 +154,6 @@ class adminController extends Controller
         $event->place()->associate($place);
         $event->type()->associate($type);
         $event->save();
-
-        //Synchronisation avec les IDs d'artistes
-        $event->artists()->sync($artists);
 
         return redirect()->route('admin.index');
     }
@@ -332,7 +313,7 @@ class adminController extends Controller
 
         //On lui associe le nouvel espace
         $event->place_id = $request->input('place_id');
-        $event->type_id=$request->input('type_id');
+        $event->type_id = $request->input('type_id');
 
         $event->title = $request->input('title');
         $event->description = $request->input('description');

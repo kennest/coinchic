@@ -29,6 +29,10 @@ class Place extends Model
         return $this->hasOne(Geolocation::class);
     }
 
+    public function district(){
+        return $this->belongsTo(District::class);
+    }
+
     public function getPictureAttribute($value){
         return $value;
     }

@@ -8,7 +8,7 @@
                     @include('Admin.Lists.place')
                 </div>
                 <div class="col-lg-12">
-                    <a href="{{route('form.place')}}" class="btn btn-block btn-primary">Ajouter</a>
+                    <a href="{{route('form.place')}}" class="btn btn-block btn-primary"><strong><h4 >Nouveau +</h4></strong></a>
                 </div>
             </div>
         </div>

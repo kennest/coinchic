@@ -45,6 +45,17 @@ return [
             'driver' => 'token',
             'provider' => 'owners',
         ],
+      /*
+       'web' => [
+            'driver' => 'session',
+            'provider' => 'firebase_users',
+    ],
+
+        'api' => [
+            'driver' => 'token',
+            'provider' => 'firebase_users',
+        ],
+      */
     ],
 
     /*
@@ -69,6 +80,12 @@ return [
             'driver' => 'eloquent',
             'model' => App\Models\Owner::class,
         ],
+        /**** Add this firebase users provider ****/
+        'firebase_users' => [
+            'driver' => 'eloquent',
+            'model' => Vinkas\Firebase\Auth\User::class,
+        ],
+        /**** ****/
 
         // 'users' => [
         //     'driver' => 'database',
